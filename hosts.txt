@@ -2,4 +2,4 @@
 #format: hostname regex -> ip address
 
 # [My Host Entries]
-^conntest\.nintendowifi\.net$ 10.0.0.89
+^ctest.cdn\.nintendo\.net$ 10.0.0.74

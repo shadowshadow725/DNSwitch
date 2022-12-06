@@ -4,14 +4,14 @@ import re
 import sys
 import socket
 import traceback
-from os.path import isfile
+from config import DNS_PORT, ADDRESS, IP
+
 
 HOSTS_FILE = "hosts.txt"
 
-SERVER_HOST = "0.0.0.0"
-SERVER_PORT = 53
+SERVER_HOST = IP
+SERVER_PORT = DNS_PORT
 
-#ipv4_exp = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
 
 class DNSQuery:
     def __init__(self, data):
@@ -38,41 +38,34 @@ class DNSQuery:
             packet += bytearray([int(x) for x in ip.split(".")])  # 4 bytes of IP
         return packet
 
-def parse_host_file_as_regex(data):
+
+def parse_host_file_as_regex():
     host_list = []
-    for line in data.splitlines():
-        if line != "" and line[0] != "#":
-            split_line = line.split(" ", 1)
-            if len(split_line) == 2:
-                host_regex = split_line[0]
-                ip_addr = split_line[1]
-                host_list.append([re.compile(host_regex), ip_addr])
+    host_list.append([re.compile(ADDRESS), SERVER_HOST])
     return host_list
 
-if __name__ == '__main__':
-    if isfile(HOSTS_FILE):
-        host_data = parse_host_file_as_regex(open(HOSTS_FILE, "r").read())
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((SERVER_HOST, SERVER_PORT))
-        print("DNS Proxy server started on UDP port {}!".format(SERVER_PORT))
-        while True:
-            try:
-                (data, addr) = sock.recvfrom(1024)
-                p = DNSQuery(data)
-                result = [ip_addr for (regex, ip_addr) in host_data if regex.search(p.domain)]
-                if result:
-                    ip = result[0]
-                    print("Local:  {} -> {}".format(p.domain, ip))
-                    sock.sendto(p.response(ip), addr)
-                else:
-                    ip = socket.gethostbyname(p.domain)
-                    print("Remote: {} -> {}".format(p.domain, ip))
-                    sock.sendto(p.response(ip), addr)
-            except KeyboardInterrupt:
-                print("Done!")
-                sock.close()
-                sys.exit(0)
-            except:
-                traceback.print_exc()
-    else:
-        print("Host file not found!")
+
+def run():
+    host_data = parse_host_file_as_regex()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((SERVER_HOST, SERVER_PORT))
+    print("DNS Proxy server started on UDP port {}!".format(SERVER_PORT))
+    while True:
+        try:
+            (data, addr) = sock.recvfrom(1024)
+            p = DNSQuery(data)
+            result = [ip_addr for (regex, ip_addr) in host_data if regex.search(p.domain)]
+            if result:
+                ip = result[0]
+                print("Local:  {} -> {}".format(p.domain, ip))
+                sock.sendto(p.response(ip), addr)
+            else:
+                ip = socket.gethostbyname(p.domain)
+                print("Remote: {} -> {}".format(p.domain, ip))
+                sock.sendto(p.response(ip), addr)
+        except KeyboardInterrupt:
+            print("Done!")
+            sock.close()
+            sys.exit(0)
+        except:
+            traceback.print_exc()

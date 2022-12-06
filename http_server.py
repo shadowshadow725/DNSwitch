@@ -1,7 +1,8 @@
 from os.path import isfile, join
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-SERVER_ADDR = "0.0.0.0"
+
+SERVER_ADDR = "10.0.0.74"
 SERVER_PORT = 80
 
 SERVER_DIR = "http"
@@ -23,6 +24,8 @@ class HTTPHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
-with HTTPServer((SERVER_ADDR, SERVER_PORT), HTTPHandler) as httpd:
-    print("Serving on port {}".format(SERVER_PORT))
-    httpd.serve_forever()
+
+def run():
+    with HTTPServer((SERVER_ADDR, SERVER_PORT), HTTPHandler) as httpd:
+        print("Serving on port {}".format(SERVER_PORT))
+        httpd.serve_forever()

@@ -9,27 +9,15 @@ SERVER_DIR = "http"
 class HTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         file_path = join(SERVER_DIR, self.path.split("/")[-1])
-        if(file_path == SERVER_DIR + "\\"):  #requesting the index page
+        if file_path == SERVER_DIR + "/":  # / for linux \\ for windows
             print("Sending index page")
             self.send_response(200)
             self.send_header('Content-Type', 'text/html')
+            self.send_header('Cache-Control', 'max-age=0, no-cache, no-store')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('X-Organization', 'Nintendo')
             self.end_headers()
             self.wfile.write(open(file_path + "index.html", "rb").read())
-        elif isfile(file_path):  #requesting another page
-            print("Sending {}".format(file_path))
-            self.send_response(200)
-            file_name = file_path.split("\\")[-1]
-            file_ext = file_name.split(".")[-1]
-            content_type = None
-            if file_ext == "html":
-                content_type = "text/html"
-            elif file_ext == "css":
-                content_type = "text/css"
-            elif file_ext == "js":
-                content_type = "text/javascript"
-            self.send_header('Content-Type', content_type)
-            self.end_headers()
-            self.wfile.write(open(file_path, "rb").read())
         else:
             print("Sending 404 for {}".format(file_path))
             self.send_response(404)

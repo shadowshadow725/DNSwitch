@@ -27,5 +27,5 @@ class HTTPHandler(BaseHTTPRequestHandler):
 
 def run():
     with HTTPServer((SERVER_ADDR, SERVER_PORT), HTTPHandler) as httpd:
-        print("Serving on port {}".format(SERVER_PORT))
+        print("Webserver serving on port {}".format(SERVER_PORT))
         httpd.serve_forever()
